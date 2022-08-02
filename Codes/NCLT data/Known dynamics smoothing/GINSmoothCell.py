@@ -83,6 +83,7 @@ class GKNSmoothingCell(k.layers.Layer):
         if self.USE_CONV == True:
             #build J gru parameters
             self.GRUJunit = 2 * self._lsd * 5
+            # self.CholeskyKG = self.add_weight(shape=[self._lsd * self._lod , self._lsd * self._lsd], name="grulastweight", initializer='random_normal') #(J, lsd^2)
             self.LastWeightKG = self.add_weight(shape=[2 * self._lsd * self._lsd , self._lsd * self._lsd], name="grulastweight", initializer='random_normal') #(4*J, J)
             self.NextWeightKG = self.add_weight(shape=[self.GRUJunit ,2 * self._lsd * self._lsd], name="grunextweight", initializer='random_normal') #(gru out, J*4)
             self.PrevWeightKG = self.add_weight(shape=[3*self._lsd , self.GRUJunit*2], name="gruprevweight", initializer='random_normal')# ( lsd^2, gru in)
@@ -91,6 +92,7 @@ class GKNSmoothingCell(k.layers.Layer):
         if self.USE_CONV == False:
             #build J gru parameters
             self.GRUJunit = 2 * self._lsd * 5
+            # self.CholeskyKG = self.add_weight(shape=[self._lsd * self._lod , self._lsd * self._lsd], name="grulastweight", initializer='random_normal') #(J, lsd^2)
             self.LastWeightKG = self.add_weight(shape=[2 * self._lsd * self._lsd , self._lsd * self._lsd], name="grulastweight", initializer='random_normal') #(4*J, J)
             self.NextWeightKG = self.add_weight(shape=[self.GRUJunit ,2 * self._lsd * self._lsd], name="grunextweight", initializer='random_normal') #(gru out, J*4)
             self.PrevWeightKG = self.add_weight(shape=[self._lsd**2 , self.GRUJunit*2], name="gruprevweight", initializer='random_normal')# ( lsd^2, gru in)
@@ -115,6 +117,7 @@ class GKNSmoothingCell(k.layers.Layer):
         #                prior_covar_tp1 = sigma_t+1|t = A|t+1 sigma_t|t A_t+1^T + Q_t+1
         #                transition_matrix_tp1 = A_t+1
         filt_t_mean, filt_t_covar, prior_tp1_mean, prior_tp1_covar, transition_tp1_matrix = inputs
+        # self.A_tp1_matrix = transition_tp1_matrix
         smooth_tp1_mean, smooth_tp1_covar = unpack_state( states[0], self._lsd)  
         
         # # update step (current smooth from next smooth)
@@ -143,6 +146,18 @@ class GKNSmoothingCell(k.layers.Layer):
         J = tf.matmul(J, self.NextWeightKG)
         J = tf.matmul(J, self.LastWeightKG)
         J = tf.reshape(J, [J.shape[0], self._lsd, self._lsd])
+
+
+        # J = tf.matmul(J, self.NextWeightKG)
+        # J = tf.matmul(J, self.LastWeightKG)
+        # J = tf.matmul(J, self.CholeskyKG)
+        # J = tf.reshape(J, [J.shape[0], self._lod, self._lod])
+        # Diag_J = tf.linalg.diag_part(J)
+        # Diag_elements_dense = self._layer_covar_gru(Diag_J)
+        # elup_Diag_elements = tf.linalg.diag(elup1(Diag_elements_dense))
+        # Positive_J = elup_Diag_elements + ( J - tf.linalg.diag(tf.linalg.diag_part(J)))
+        # J = tf.matmul(tf.matmul(prior_covar, tf.transpose(self.A_tp1_matrix)), tf.matmul(Positive_J, tf.transpose(Positive_J)))
+
         return J
     
     def build_conv_gru(self):

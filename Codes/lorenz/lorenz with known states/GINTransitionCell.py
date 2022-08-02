@@ -169,6 +169,7 @@ class GINTransitionCell(k.layers.Layer):
         
         #build KG gru parameters
         self.GRUKGunit = 5*(self._lsd**2 + self._lod**2)
+        # self.CholeskyKG = self.add_weight(shape=[ self._lsd * self._lod , self._lod * self._lod], name="grulastweight", initializer='random_normal') #(KG, lod^2)
         self.NextWeightKG = self.add_weight(shape=[self.GRUKGunit , self._lsd * self._lod], name="grunextweight", initializer='random_normal') #(gru out, KG)
         self.PrevWeightKG = self.add_weight(shape=[self._lsd**2 + self._lod, self.GRUKGunit * 2], name="gruprevweight", initializer='random_normal')# (lod + lsd^2, gru in)
         self.GRUKG = k.layers.GRUCell( self.GRUKGunit)
@@ -287,6 +288,15 @@ class GINTransitionCell(k.layers.Layer):
         self.GRUKG_state = KG # next self.GRUKG_state
         KG = tf.matmul(KG, self.NextWeightKG)
         KG = tf.reshape(KG, [KG.shape[0], self._lsd, self._lod])
+
+        # KG = tf.matmul(KG, self.NextWeightKG)
+        # KG = tf.matmul(KG, self.CholeskyKG)
+        # KG = tf.reshape(KG, [KG.shape[0], self._lod, self._lod])
+        # Diag_KG = tf.linalg.diag_part(KG)
+        # Diag_elements_dense = self._layer_covar_gru(Diag_KG)
+        # elup_Diag_elements = tf.linalg.diag(elup1(Diag_elements_dense))
+        # Positive_KG = elup_Diag_elements + ( KG - tf.linalg.diag(tf.linalg.diag_part(KG)))
+        # KG = tf.matmul(tf.matmul(prior_covar, tf.transpose(self.H_matrix)), tf.matmul(Positive_KG, tf.transpose(Positive_KG)))
         return KG
     
     def F(self, x):         

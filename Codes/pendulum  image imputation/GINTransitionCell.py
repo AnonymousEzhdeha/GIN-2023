@@ -195,6 +195,7 @@ class GINTransitionCell(k.layers.Layer):
         if self.USE_CONV == True:
             #build KG gru parameters
             self.GRUKGunit = 50
+            # self.CholeskyKG = self.add_weight(shape=[ self._lsd * self._lod , self._lod * self._lod], name="grulastweight", initializer='random_normal') #(KG, lod^2)
             self.LastWeightKG = self.add_weight(shape=[4 * self._lsd * self._lod , self._lsd * self._lod], name="grulastweight", initializer='random_normal') #(4*KG, KG)
             self.NextWeightKG = self.add_weight(shape=[self.GRUKGunit ,4 * self._lsd * self._lod], name="grunextweight", initializer='random_normal') #(gru out, KG*4)
             self.PrevWeightKG = self.add_weight(shape=[3*self._lsd + self._lod, self.GRUKGunit*2], name="gruprevweight", initializer='random_normal')# (lod + lsd^2, gru in)
@@ -203,6 +204,7 @@ class GINTransitionCell(k.layers.Layer):
         if self.USE_CONV == False:
             #build KG gru parameters
             self.GRUKGunit = 50
+            # self.CholeskyKG = self.add_weight(shape=[ self._lsd * self._lod , self._lod * self._lod], name="grulastweight", initializer='random_normal') #(KG, lod^2)
             self.LastWeightKG = self.add_weight(shape=[4 * self._lsd * self._lod , self._lsd * self._lod], name="grulastweight", initializer='random_normal') #(4*KG, KG)
             self.NextWeightKG = self.add_weight(shape=[self.GRUKGunit ,4 * self._lsd * self._lod], name="grunextweight", initializer='random_normal') #(gru out, KG*4)
             self.PrevWeightKG = self.add_weight(shape=[self._lsd**2 + self._lod, self.GRUKGunit*2], name="gruprevweight", initializer='random_normal')# (lod + lsd^2, gru in)
@@ -343,6 +345,17 @@ class GINTransitionCell(k.layers.Layer):
         KG = tf.matmul(KG, self.NextWeightKG)
         KG = tf.matmul(KG, self.LastWeightKG)
         KG = tf.reshape(KG, [KG.shape[0], self._lsd, self._lod])
+
+        # KG = tf.matmul(KG, self.NextWeightKG)
+        # KG = tf.matmul(KG, self.LastWeightKG)
+        # KG = tf.matmul(KG, self.CholeskyKG)
+        # KG = tf.reshape(KG, [KG.shape[0], self._lod, self._lod])
+        # Diag_KG = tf.linalg.diag_part(KG)
+        # Diag_elements_dense = self._layer_covar_gru(Diag_KG)
+        # elup_Diag_elements = tf.linalg.diag(elup1(Diag_elements_dense))
+        # Positive_KG = elup_Diag_elements + ( KG - tf.linalg.diag(tf.linalg.diag_part(KG)))
+        # KG = tf.matmul(tf.matmul(prior_covar, tf.transpose(self.H_matrix)), tf.matmul(Positive_KG, tf.transpose(Positive_KG)))
+
         return KG
     
     def build_conv_gru(self):
