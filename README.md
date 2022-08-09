@@ -1,4 +1,4 @@
-# NeurIPS-2022_GIN
+# GIN-2022
 
 This is a, commented version of the Code used for the experiments described in the paper.
 
