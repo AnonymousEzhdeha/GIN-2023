@@ -8,4 +8,4 @@ GINSmoothCell : considering smoothing parameterization (implemented in the paper
 ImageGen : Noisy high dimensional observation generation
 LayerNormalizer : Operates layer normalization
 
-Files include comments for better readability
+Files include comments for better readability.
