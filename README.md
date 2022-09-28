@@ -1,23 +1,6 @@
 # GIN-2022
 
 This is a, commented version of the Code used for the experiments described in the paper.
-
-## Figures
-
-  ### Figures2 Proposal
-  Contains the proposed figures for the figure2 in the paper 
-  - Overall_1
-  - Overall_2
-  - Main+Subfigures
-    
-  ### Gaussianity Generated Samples
-  Contains the generated samples from smoothened distribution
-  - Double Pendulum
-  - Single Pendulum
-  - Visual Odometry
-
-  ### Empirical Running Times and Parameters
-  - Contains emprical running times and parameters table
     
 
 ## Code
